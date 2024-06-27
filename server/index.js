@@ -2,8 +2,10 @@ require('dotenv').config();
 
 const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
+const cors = require('@koa/cors');
 const session = require('koa-session');
 const passport = require('koa-passport');
+
 const auth0Routes = require('./routes/auth0Routes');
 const idpRoute = require('./routes/getIdps');
 
@@ -38,6 +40,12 @@ app.on('error', (err, ctx) => {
         error: err.message
     };
 });
+
+// Use CORS
+app.use(cors({
+    origin: 'http://localhost:3002', // replace with your Next.js frontend URL
+    credentials: true
+}));
 
 // routes
 app.use(auth0Routes.routes()).use(auth0Routes.allowedMethods());
