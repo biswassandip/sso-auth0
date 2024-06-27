@@ -1,0 +1,60 @@
+
+# POC: SSO using Auth0
+
+This POC is created to tryout SSO configurationa and usage using Auth0.
+
+## Installation & Execution
+
+- Clone or download the code into a folder.
+- From the terminal execute:
+```
+$ npm install
+```
+- Create .env file within /server and add the below:
+```
+AUTH0_CLIENT_ID=
+AUTH0_CLIENT_SECRET=
+AUTH0_DOMAIN=
+AUTH0_CALLBACK_URL=
+
+AUTH0_MGMT_CLIENT_ID=
+AUTH0_MGMT_CLIENT_SECRET=
+AUTH0_MGMT_AUDIENCE=https://${AUTH0_DOMAIN}/api/v2/
+
+JWT_SECRET=
+
+SESSION_SECRET=
+PORT=3000
+```
+The Auth0 data for the above can be found within your Auth0 Application configuration.
+- From the terminal execute
+```
+$ npx nodemon index.js
+```
+or
+```
+$ node index.js
+```
+- The server will run with below output
+```
+[nodemon] 3.1.4
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,cjs,json
+[nodemon] starting `node index.js`
+Server is running on http://localhost:3000
+```
+- From the browser access, http://localhost:3000/, you should get output with
+```
+In Logged out state
+Click to login Login
+```
+- Click on Login, this will take you to the Auth0 user login page. Here you can create a new user or login with existing user
+- After successful login, you should get the woutput with
+```
+Successfully Logged in
+Click to logout Logout
+Below are the data 
+...................
+...................
+```
