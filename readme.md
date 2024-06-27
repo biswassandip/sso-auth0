@@ -3,6 +3,8 @@
 
 This POC is created to tryout SSO configurationa and usage using Auth0.
 
+![Static Badge](https://img.shields.io/badge/nodejs-%3E%3Dv3.10-blue)
+
 ## Installation & Execution
 
 - Clone or download the code into a folder.
