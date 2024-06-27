@@ -41,11 +41,11 @@ app.on('error', (err, ctx) => {
     };
 });
 
-// Use CORS
-app.use(cors({
-    origin: 'http://localhost:3002', // replace with your Next.js frontend URL
-    credentials: true
-}));
+// // Use CORS
+// app.use(cors({
+//     origin: 'http://localhost:3002', // replace with your Next.js frontend URL
+//     credentials: true
+// }));
 
 // routes
 app.use(auth0Routes.routes()).use(auth0Routes.allowedMethods());

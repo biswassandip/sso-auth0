@@ -1,9 +1,11 @@
-require('dotenv').config();
+//require('dotenv').config();
 
 const Router = require('koa-router');
 const passport = require('koa-passport');
 const Auth0Strategy = require('passport-auth0');
 const router = new Router();
+
+// jwt
 const jwt = require('jsonwebtoken');
 
 // get the configurations
@@ -14,8 +16,6 @@ const AUTH0_CALLBACK_URL = process.env.AUTH0_CALLBACK_URL;
 const AUTH0_STRATEGY = "auth0";
 const AUTH0_SCOPES = "openid email profile";
 const JWT_SECRET = process.env.JWT_SECRET;
-const FRONTEND_URL = process.env.FRONTEND_URL;
-
 
 // passport configuration with Auth0 strategy
 passport.use(new Auth0Strategy({
@@ -33,14 +33,6 @@ passport.use(new Auth0Strategy({
     }
 ));
 
-// passport.serializeUser((user, done) => {
-//     done(null, user);
-// });
-
-// passport.deserializeUser((user, done) => {
-//     done(null, user);
-// });
-
 // build the routes for auth0 --------------------------
 
 // the login
@@ -51,8 +43,10 @@ router.get('/login', async (ctx, next) => {
     // If idp is provided, use that strategy, otherwise default to 'auth0'
     const strategy = idp ? idp : AUTH0_STRATEGY;
 
+    console.log(strategy);
+
     // Initiate authentication with selected strategy
-    await passport.authenticate(strategy, {
+    await passport.authenticate(AUTH0_STRATEGY, {
         scope: AUTH0_SCOPES
     })(ctx, next).catch(err => {
         console.error('Authentication error:', err);
@@ -65,10 +59,10 @@ router.get('/callback', async (ctx, next) => {
     const { idp } = ctx.query;
 
     // Use the same strategy as initiated during login
-    const strategy = idp ? idp : 'auth0';
+    const strategy = idp ? idp : AUTH0_STRATEGY;
 
     await passport.authenticate(strategy, {
-        failureRedirect: FRONTEND_URL
+        failureRedirect: '/'
     })(ctx, next).catch(err => {
         console.error('Authentication callback error:', err);
         ctx.throw(500, 'Authentication callback error');
@@ -97,20 +91,16 @@ router.get('/callback', async (ctx, next) => {
             maxAge: 3600000, // 1 hour
             sameSite: 'lax'
         });
-
-        // ctx.redirect(`http://localhost:3002/profile`);
-        ctx.redirect(`http://localhost:3002`);
     }
 
+    // After successful authentication, you can access token and session info
+    const { profile, accessToken } = ctx.state.user;
 
-    // // After successful authentication, you can access token and session info
-    // const { profile, accessToken } = ctx.state.user;
+    // Access token
+    console.log('Access Token:', accessToken);
 
-    // // Access token
-    // console.log('Access Token:', accessToken);
-
-    // // Redirect to home page or wherever appropriate
-    // ctx.redirect(`${ process.env.FRONTEND_URL }/profile`);
+    // Redirect to home page or wherever appropriate
+    ctx.redirect('/');
 });
 
 router.get('/logout', async (ctx, next) => {
@@ -131,19 +121,46 @@ router.get('/logout', async (ctx, next) => {
 
     // Handle logout logic
     ctx.cookies.set('jwt', '', { maxAge: 0 }); // Clear JWT cookie
-    ctx.body = 'logged out';
+//    ctx.redirect('/');  
 
-    // Set CORS headers explicitly for redirect response
-    // ctx.set('Access-Control-Allow-Origin', 'http://localhost:3002');
-    // ctx.set('Access-Control-Allow-Credentials', 'true');
-    // ctx.redirect('http://localhost:3002');  // Redirect to frontend
+    // Redirect to Auth0 logout endpoint
+    const returnTo = `${ ctx.protocol }://${ ctx.host }`;
+    ctx.redirect(`https://${ process.env.AUTH0_DOMAIN }/v2/logout?client_id=${ process.env.AUTH0_CLIENT_ID }&returnTo=${ returnTo }`);
+
 });
 
 router.get('/', (ctx, next) => {
     if (ctx.isAuthenticated()) {
-        ctx.body = `Hello ${ JSON.stringify(ctx.state.user, undefined, 4) }`;
+
+        ctx.type = 'text/html';
+        ctx.body = `
+                    <html>
+                        <head>
+                            <title>SSO</title>
+                        </head>
+                        <body>
+                            <h2>Successfully Logged in</h2>
+                            <h3>Click to logout <a href="/logout">Logout</a></h3>
+                            <h3>Below are the data</h3>
+                            <pre>
+                                ${ JSON.stringify(ctx.state.user, undefined, 4) }
+                            </pre>
+                        </body>
+                    </html>
+                    `;        
     } else {
-        ctx.body = 'Hello World';
+        ctx.type = 'text/html';
+        ctx.body = `
+                    <html>
+                        <head>
+                            <title>SSO</title>
+                        </head>
+                        <body>
+                            <h2>In Logged out state</h2>
+                            <h3>Click to login <a href="/login">Login</a></h3>
+                        </body>
+                    </html>
+                    `;        
     }
 });
 
