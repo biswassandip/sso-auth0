@@ -3,7 +3,7 @@
 
 This POC is created to tryout SSO configurationa and usage using Auth0.
 
-![Static Badge](https://img.shields.io/badge/nodejs-%3E%3Dv3.10-blue)
+![Static Badge](https://img.shields.io/badge/nodejs-%3E%3Dv20.4.0-blue)
 
 ## Installation & Execution
 
@@ -12,6 +12,7 @@ This POC is created to tryout SSO configurationa and usage using Auth0.
 ```
 $ npm install
 ```
+- Refer the package.json file and you should see all the dependencies used
 - Create .env file within /server and add the below:
 ```
 AUTH0_CLIENT_ID=
@@ -60,3 +61,6 @@ Below are the data
 ...................
 ...................
 ```
+- Observe the terminal/console and you see access token logged as output
+- Observe the broswer cookie and you will see a token created by the backend after succesful loginw ith the name as "jwt"
+- Click on Logout and this should logout the Auth0 Session, remove koa session and the jwt token.
