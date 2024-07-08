@@ -38,39 +38,64 @@ passport.use(new Auth0Strategy({
 // the login
 router.get('/login', async (ctx, next) => {
     // Extract IdP from query parameter (if provided)
-    const { idp } = ctx.query;
+    const idp = ctx.query.idp; // Get IdP parameter from query string
 
-    // If idp is provided, use that strategy, otherwise default to 'auth0'
-    const strategy = idp ? idp : AUTH0_STRATEGY;
+    const options = {
+        scope: 'openid profile email' 
+    };
 
-    console.log(strategy);
+    if (idp) {
+        // If IdP is provided, add the connection parameter to the options
+        options.connection = idp;
+    }    
+    
+    console.log(options);
 
-    // Initiate authentication with selected strategy
-    await passport.authenticate(AUTH0_STRATEGY, {
-        scope: AUTH0_SCOPES
-    })(ctx, next).catch(err => {
-        console.error('Authentication error:', err);
-        ctx.throw(500, 'Authentication error');
-    });    
+    // if (idp) {
+    //     // If IdP is provided, use the specific IdP connection
+    //     return passport.authenticate('auth0', { connection: idp })(ctx);
+    // } else {
+    //     // If IdP is not provided, use the default Auth0 login
+    //     return passport.authenticate('auth0')(ctx);
+    // }
+
+    console.log("1");
+        // Initiate authentication with selected strategy
+        await passport.authenticate(AUTH0_STRATEGY, options)(ctx, next).catch(err => {
+            console.error('Authentication error:', err);
+            ctx.throw(500, 'Authentication error');
+        });                
+
+    console.log("2");
 });
 
 // the callback after authentication
 router.get('/callback', async (ctx, next) => {
     const { idp } = ctx.query;
 
+    console.log('3');
+
     // Use the same strategy as initiated during login
     const strategy = idp ? idp : AUTH0_STRATEGY;
 
-    await passport.authenticate(strategy, {
+    console.log('4');
+
+    await passport.authenticate(AUTH0_STRATEGY, {
         failureRedirect: '/'
     })(ctx, next).catch(err => {
         console.error('Authentication callback error:', err);
         ctx.throw(500, 'Authentication callback error');
     });
+    console.log('5');
+    console.log(ctx);
+
 }, async (ctx) => {
+    console.log('6');
 
     // get the user
     const user = ctx.state.user;
+
+    console.log(user);
 
     if (!user) {
         ctx.redirect('/login');
@@ -157,7 +182,9 @@ router.get('/', (ctx, next) => {
                         </head>
                         <body>
                             <h2>In Logged out state</h2>
-                            <h3>Click to login <a href="/login">Login</a></h3>
+                            <h3>Click for user login <a href="/login">User Login</a></h3>
+                            <br/>
+                            <h3>Click for idp login <a href="/login?idp=test-entra-id">Entra Login</a></h3>
                         </body>
                     </html>
                     `;        
